@@ -1,0 +1,14 @@
+{
+  "name": "Elton Cruzeiros — AngularJS & Vue",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+  "forwardPorts": [8000, 5173],
+  "portsAttributes": {
+    "8000": { "label": "AngularJS (estático)", "onAutoForward": "openPreview" },
+    "5173": { "label": "Vue (Vite)", "onAutoForward": "notify" }
+  },
+  "postCreateCommand": "cd vue && npm install",
+  "postAttachCommand": "(cd angularjs && nohup python3 -m http.server 8000 >/tmp/angularjs.log 2>&1 &) ; (cd vue && nohup npm run dev >/tmp/vue.log 2>&1 &)",
+  "customizations": {
+    "vscode": { "extensions": ["Vue.volar", "MS-CEINTL.vscode-language-pack-pt-BR"] }
+  }
+}

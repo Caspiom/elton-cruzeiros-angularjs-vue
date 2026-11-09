@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR" ng-app="eltonApp">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Elton Cruzeiros — AngularJS</title>
+  <meta name="description" content="Atividade AngularJS: seis componentes (acordeão, paginação, barra de progresso, abas, menu suspenso e toast) como diretivas.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body ng-controller="MainController" ng-cloak>
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+  <!-- ===== Cabeçalho ===== -->
+  <header class="site-header">
+    <div class="container header-row">
+      <a class="brand" href="#topo"><span class="brand-logo" aria-hidden="true">⚓</span> Elton Cruzeiros</a>
+      <button type="button" class="menu-toggle" ng-click="menuAberto = !menuAberto"
+              aria-controls="menu-principal" aria-expanded="{{ menuAberto }}" aria-label="Abrir menu">☰</button>
+      <nav id="menu-principal" class="main-nav" ng-class="{ 'is-open': menuAberto }" aria-label="Principal">
+        <a href="#roteiros" ng-click="menuAberto = false">Roteiros</a>
+        <a href="#detalhes" ng-click="menuAberto = false">Navio</a>
+        <a href="#preparacao" ng-click="menuAberto = false">Preparação</a>
+        <a href="#faq" ng-click="menuAberto = false">FAQ</a>
+        <a href="#avisos" ng-click="menuAberto = false">Avisos</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="conteudo">
+    <!-- ===== Hero ===== -->
+    <section class="hero" id="topo" aria-labelledby="titulo-hero">
+      <div class="container">
+        <p class="eyebrow">Atividade AngularJS · UCSal</p>
+        <h1 id="titulo-hero">Navegue por roteiros com seis diretivas AngularJS</h1>
+        <p class="lead">Acordeão, paginação, barra de progresso, abas, menu suspenso e notificações toast —
+          cada um é uma diretiva independente, reunida numa vitrine de cruzeiros fictícia.</p>
+        <a class="btn btn-primary" href="#roteiros">Ver roteiros</a>
+      </div>
+    </section>
+
+    <!-- ===== Roteiros: Dropdown + Paginação ===== -->
+    <section class="section" id="roteiros" aria-labelledby="titulo-roteiros">
+      <div class="container">
+        <h2 id="titulo-roteiros">Roteiros 2027</h2>
+        <p class="section-sub">Menu suspenso para filtrar e ordenar; paginação para percorrer os resultados.</p>
+
+        <div class="toolbar">
+          <div class="field">
+            <label for="busca">Buscar roteiro</label>
+            <input id="busca" type="search" placeholder="Ex.: Fiordes" autocomplete="off"
+                   ng-model="filtro.busca" ng-change="atualizarLista(true)">
+          </div>
+          <ec-dropdown label="Destino" options="destinos" selected="filtro.destino" on-select="escolherDestino(option)"></ec-dropdown>
+          <ec-dropdown label="Ordenar por" options="ordenacoes" selected="filtro.ordem" on-select="escolherOrdem(option)"></ec-dropdown>
+        </div>
+
+        <p class="result-count" role="status" aria-live="polite">
+          {{ resultados.length }} {{ resultados.length === 1 ? 'roteiro encontrado' : 'roteiros encontrados' }}
+        </p>
+
+        <div class="card-grid">
+          <article class="card" ng-repeat="r in pagina track by r.id">
+            <img class="card-photo" ng-src="{{ r.imagem }}" alt="{{ r.alt }}">
+            <div class="card-body">
+              <span class="badge">{{ r.destino | uppercase }}</span>
+              <h3>{{ r.nome }}</h3>
+              <p>{{ r.descricao }}</p>
+              <dl class="card-meta">
+                <div><dt>Duração</dt><dd>{{ r.noites | noites }}</dd></div>
+                <div><dt>Partida</dt><dd>{{ r.partida | date:'dd/MM/yyyy' }}</dd></div>
+              </dl>
+              <p class="price">{{ r.preco | currency }} <small>por pessoa</small></p>
+              <button type="button" class="btn btn-primary btn-block" ng-click="reservar(r)">Reservar</button>
+            </div>
+          </article>
+        </div>
+        <p class="empty" ng-if="resultados.length === 0">Nenhum roteiro encontrado. Tente outro termo ou destino.</p>
+
+        <ec-pagination total-pages="totalPaginas" current-page="paginaAtual" on-change="irParaPagina(page)"></ec-pagination>
+      </div>
+    </section>
+
+    <!-- ===== Abas ===== -->
+    <section class="section" id="detalhes" aria-labelledby="titulo-detalhes">
+      <div class="container">
+        <h2 id="titulo-detalhes">Conheça o navio Aurora Boreal</h2>
+        <p class="section-sub">Abas: use o mouse ou as setas ← → do teclado.</p>
+        <div class="panel"><ec-tabs tabs="detalhes"></ec-tabs></div>
+      </div>
+    </section>
+
+    <!-- ===== Barras de progresso ===== -->
+    <section class="section" id="preparacao" aria-labelledby="titulo-preparacao">
+      <div class="container">
+        <h2 id="titulo-preparacao">Prepare sua viagem</h2>
+        <p class="section-sub">Duas barras de progresso: uma segue o checklist, a outra acompanha um envio de arquivo.</p>
+        <div class="two-col">
+          <div class="panel">
+            <h3>Checklist de embarque</h3>
+            <ec-progress-bar value="progressoChecklist" label="Checklist concluído" variant="info"></ec-progress-bar>
+            <ul class="checklist">
+              <li ng-repeat="item in checklist">
+                <label><input type="checkbox" ng-model="item.feito" ng-change="recalcularChecklist()"> {{ item.texto }}</label>
+              </li>
+            </ul>
+          </div>
+          <div class="panel">
+            <h3>Documento de embarque</h3>
+            <p>Simule o envio do passaporte digitalizado.</p>
+            <ec-progress-bar value="envio.progresso" label="Envio do documento" variant="success"></ec-progress-bar>
+            <div class="btn-row">
+              <button type="button" class="btn btn-primary" ng-click="iniciarEnvio()" ng-disabled="envio.ativo">Enviar documento</button>
+              <button type="button" class="btn btn-ghost" ng-click="cancelarEnvio()" ng-disabled="!envio.ativo">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Acordeão ===== -->
+    <section class="section" id="faq" aria-labelledby="titulo-faq">
+      <div class="container narrow">
+        <h2 id="titulo-faq">Perguntas frequentes</h2>
+        <p class="section-sub">Acordeão: um painel aberto por vez, com transição suave.</p>
+        <ec-accordion items="faq" single-open="true"></ec-accordion>
+      </div>
+    </section>
+
+    <!-- ===== Toast ===== -->
+    <section class="section" id="avisos" aria-labelledby="titulo-avisos">
+      <div class="container narrow">
+        <h2 id="titulo-avisos">Notificações toast</h2>
+        <p class="section-sub">Escreva uma mensagem (ng-model) e dispare um toast de cada tipo. Eles somem sozinhos em 4 s ou ao clicar no ×.</p>
+        <div class="panel">
+          <div class="field">
+            <label for="msg-toast">Mensagem</label>
+            <input id="msg-toast" type="text" maxlength="90" ng-model="toastDemo.mensagem">
+          </div>
+          <div class="btn-row">
+            <button type="button" class="btn btn-success" ng-click="dispararToast('success')">Sucesso</button>
+            <button type="button" class="btn btn-danger" ng-click="dispararToast('error')">Erro</button>
+            <button type="button" class="btn btn-info" ng-click="dispararToast('info')">Informação</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>Elton Cruzeiros — trabalho acadêmico (UCSal, Engenharia de Software · Prof. Elton Figueiredo da Silva). Conteúdo fictício.</p>
+    </div>
+  </footer>
+
+  <ec-toast-container></ec-toast-container>
+
+  <!-- AngularJS (local, sem CDN) + idioma pt-BR para currency/date -->
+  <script src="vendor/angular.min.js"></script>
+  <script src="vendor/angular-locale_pt-br.js"></script>
+  <!-- app.js primeiro: declara os módulos que os demais arquivos preenchem -->
+  <script src="js/app.js"></script>
+  <script src="js/services/cruzeiros.service.js"></script>
+  <script src="js/services/toast.service.js"></script>
+  <script src="js/filters/filters.js"></script>
+  <script src="js/directives/accordion.directive.js"></script>
+  <script src="js/directives/pagination.directive.js"></script>
+  <script src="js/directives/progress-bar.directive.js"></script>
+  <script src="js/directives/tabs.directive.js"></script>
+  <script src="js/directives/dropdown.directive.js"></script>
+  <script src="js/directives/toast.directive.js"></script>
+  <script src="js/controllers/main.controller.js"></script>
+</body>
+</html>
